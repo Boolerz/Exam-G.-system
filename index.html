@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      margin: 0 auto;
+      width: 300px;
+    }
+
+    label, input {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    input[type="text"] {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h1>Submit Student Marks</h1>
+  <form id="marksForm">
+    <label for="subject">Subject:</label>
+    <input type="text" id="subject" name="subject"><br><br>
+
+    <label for="student1">Student 1 Admission Number:</label>
+    <input type="text" id="student1" name="student1">
+    <label for="mark1">Mark:</label>
+    <input type="text" id="mark1" name="mark1"><br><br>
+
+    <label for="student2">Student 2 Admission Number:</label>
+    <input type="text" id="student2" name="student2">
+    <label for="mark2">Mark:</label>
+    <input type="text" id="mark2" name="mark2"><br><br>
+
+    <button type="button" onclick="submitMarks()">Submit Marks</button>
+  </form>
+
+  <script>
+    function submitMarks() {
+      // Get values from form
+      var subject = document.getElementById("subject").value;
+      var student1 = document.getElementById("student1").value;
+      var mark1 = document.getElementById("mark1").value;
+      var student2 = document.getElementById("student2").value;
+      var mark2 = document.getElementById("mark2").value;
+
+      // Check if subject or student data is missing
+      if (!subject || !student1 || !mark1 || !student2 || !mark2) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      // Create data object to send to Google Apps Script
+      var data = {
+        subject: subject,
+        students: [
+          { admissionNumber: student1, mark: mark1 },
+          { admissionNumber: student2, mark: mark2 }
+        ]
+      };
+
+      // Send data to Google Apps Script
+      google.script.run.processFormData(data);
+      alert("Data submitted successfully.");
+    }
+  </script>
+</body>
+</html>
