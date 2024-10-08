@@ -1,50 +1,69 @@
-// This function serves the web form to the user
+// Function to serve the web form
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index');
 }
 
-// This function processes the data submitted from the form
-function processFormData(data) {
+// Function to process form data
+function processFormDataForClass(data) {
   Logger.log("Processing form data...");
   Logger.log(JSON.stringify(data)); // Log the entire data object
-  
-  if (!data || !data.subject || !data.students) {
+
+  if (!data || !data.selectedClass || !data.subject || !data.students) {
     Logger.log("Invalid data received.");
     return;
   }
 
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var broadSheet = ss.getSheetByName('Broad Sheet');
+  // Get the folder named 'EXAM CENTER'
+  var folder = DriveApp.getFoldersByName('EXAM CENTER').next();
+  if (!folder) {
+    Logger.log("Folder EXAM CENTER not found.");
+    return;
+  }
 
+  // Define the spreadsheet files for Form 1 and Form 2
+  var classMap = {
+    "Form 1": folder.getFilesByName('Form 1').next(),
+    "Form 2": folder.getFilesByName('Form 2').next()
+  };
+
+  var spreadsheet = classMap[data.selectedClass];
+  if (!spreadsheet) {
+    Logger.log("Spreadsheet for " + data.selectedClass + " not found.");
+    return;
+  }
+
+  // Open the Broad Sheet in the selected spreadsheet
+  var ss = SpreadsheetApp.open(spreadsheet);
+  var broadSheet = ss.getSheetByName('Broad Sheet');
   if (!broadSheet) {
     Logger.log("Broad Sheet not found.");
     return;
   }
 
-  var subject = data.subject;
-  var students = data.students;
-
-  Logger.log("Subject: " + subject);
-  Logger.log("Students: " + JSON.stringify(students));
-
   // Map subjects to specific columns in the Broad Sheet
   var subjectColumnMap = {
-    "Maths": 4,  // Example: Column D
-    "Eng": 5,    // Example: Column E
-    "Kisw": 6,   // Example: Column F
-    "Chem": 7,   // Example: Column G
-    "Phy": 8,    // Example: Column H
-    "Bio": 9     // Example: Column I
+    "Maths": 4,   // Column D
+    "Eng": 5,     // Column E
+    "Kisw": 6,    // Column F
+    "Chem": 7,    // Column G
+    "Phy": 8,     // Column H
+    "Bio": 9,     // Column I
+    "Hist": 10,   // Column J
+    "Geo": 11,    // Column K
+    "C.R.E": 12,  // Column L
+    "I.R.E": 13,  // Column M
+    "Agr": 14,    // Column N
+    "B.std": 15   // Column O
   };
 
-  var subjectColumn = subjectColumnMap[subject];
+  var subjectColumn = subjectColumnMap[data.subject];
   if (!subjectColumn) {
-    Logger.log("Invalid subject: " + subject);
+    Logger.log("Invalid subject: " + data.subject);
     return;
   }
 
   // Iterate through each student and update their marks
-  students.forEach(function(student) {
+  data.students.forEach(function(student) {
     var admissionNumber = student.admissionNumber;
     var mark = student.mark;
 
@@ -61,9 +80,9 @@ function processFormData(data) {
   });
 }
 
-// Function to find the student's row in the sheet based on their admission number
+// Function to find the student's row based on admission number
 function findStudentRow(admissionNumber, sheet) {
-  var range = sheet.getRange(2, 1, sheet.getLastRow() - 1);  // Assume admission numbers are in Column A
+  var range = sheet.getRange(2, 1, sheet.getLastRow() - 1);  // Assuming admission numbers are in Column A
   var values = range.getValues();
 
   for (var i = 0; i < values.length; i++) {
@@ -75,25 +94,4 @@ function findStudentRow(admissionNumber, sheet) {
 
   Logger.log("Student with admission number " + admissionNumber + " not found.");
   return -1;
-}
-
-// Function to map the subject name to the correct column in the sheet
-function getSubjectColumn(subject) {
-  var subjectMap = {
-    "Maths": 4,  // Column D
-    "Eng": 5,    // Column E
-    "Kisw": 6,   // Column F
-    "Chem": 7,   // Column G
-    "Phy": 8,    // Column H
-    "Bio": 9     // Column I
-  };
-
-  var column = subjectMap[subject] || -1;
-  if (column === -1) {
-    Logger.log("Subject " + subject + " not found in subject map.");
-  } else {
-    Logger.log("Subject " + subject + " maps to column " + column);
-  }
-
-  return column;
 }
