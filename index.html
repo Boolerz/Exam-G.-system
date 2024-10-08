@@ -17,13 +17,13 @@
       width: 300px;
     }
 
-    label, input {
+    label, input, select {
       display: block;
       margin-bottom: 10px;
       width: 100%;
     }
 
-    input[type="text"] {
+    input[type="text"], select {
       padding: 5px;
       border: 1px solid #ccc;
       border-radius: 5px;
@@ -47,7 +47,16 @@
   <h1>Submit Student Marks</h1>
   <form id="marksForm">
     <label for="subject">Subject:</label>
-    <input type="text" id="subject" name="subject"><br><br>
+    <!-- Replace input with select for the dropdown -->
+    <select id="subject" name="subject">
+      <option value="">Select Subject</option>
+      <option value="Maths">Mathematics</option>
+      <option value="Eng">English</option>
+      <option value="Kisw">Kiswahili</option>
+      <option value="Chem">Chemistry</option>
+      <option value="Phy">Physics</option>
+      <option value="Bio">Biology</option>
+    </select><br><br>
 
     <label for="student1">Student 1 Admission Number:</label>
     <input type="text" id="student1" name="student1">
@@ -63,33 +72,34 @@
   </form>
 
   <script>
-    function submitMarks() {
-      // Get values from form
-      var subject = document.getElementById("subject").value;
-      var student1 = document.getElementById("student1").value;
-      var mark1 = document.getElementById("mark1").value;
-      var student2 = document.getElementById("student2").value;
-      var mark2 = document.getElementById("mark2").value;
+  function submitMarks() {
+    // Get values from the form
+    var subject = document.getElementById("subject").value;
+    var student1 = document.getElementById("student1").value;
+    var mark1 = document.getElementById("mark1").value;
+    var student2 = document.getElementById("student2").value;
+    var mark2 = document.getElementById("mark2").value;
 
-      // Check if subject or student data is missing
-      if (!subject || !student1 || !mark1 || !student2 || !mark2) {
-        alert("Please fill in all fields.");
-        return;
-      }
-
-      // Create data object to send to Google Apps Script
-      var data = {
-        subject: subject,
-        students: [
-          { admissionNumber: student1, mark: mark1 },
-          { admissionNumber: student2, mark: mark2 }
-        ]
-      };
-
-      // Send data to Google Apps Script
-      google.script.run.processFormData(data);
-      alert("Data submitted successfully.");
+    // Check if subject or student data is missing
+    if (!subject || !student1 || !mark1 || !student2 || !mark2) {
+      alert("Please fill in all fields.");
+      return;
     }
-  </script>
+
+    // Create data object to send to Google Apps Script
+    var data = {
+      subject: subject,
+      students: [
+        { admissionNumber: student1, mark: mark1 },
+        { admissionNumber: student2, mark: mark2 }
+      ]
+    };
+
+    // Send data to Google Apps Script
+    google.script.run.withSuccessHandler(function() {
+      alert("Data submitted successfully.");
+    }).processFormData(data);
+  }
+</script>
 </body>
 </html>
