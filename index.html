@@ -1,104 +1,115 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    form {
-      margin: 0 auto;
-      width: 300px;
-    }
-
-    label, input, select {
-      display: block;
-      margin-bottom: 10px;
-      width: 100%;
-    }
-
-    select, input[type="text"] {
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    button {
-      padding: 10px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-  </style>
+    <title>Submit Marks</title>
+    <style>
+        table {
+            width: 100%;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-  <h1>Submit Student Marks</h1>
-  <form id="marksForm">
-    <label for="class">Select Class:</label>
-    <select id="class" name="class">
-      <option value="Form 1">Form 1</option>
-      <option value="Form 2">Form 2</option>
-    </select><br><br>
+    <h1>Submit Marks</h1>
+    <form id="marksForm" onsubmit="event.preventDefault(); submitForm();">
+        <label for="subject">Subject:</label>
+        <select id="subject" required>
+            <option value="Maths">Maths</option>
+            <option value="Eng">Eng</option>
+            <option value="Kisw">Kisw</option>
+            <option value="Chem">Chem</option>
+            <option value="Phy">Phy</option>
+            <option value="Bio">Bio</option>
+            <option value="Hist">Hist</option>
+            <option value="Geo">Geo</option>
+            <option value="C.R.E">C.R.E</option>
+            <option value="I.R.E">I.R.E</option>
+            <option value="Agr">Agr</option>
+            <option value="B.std">B.std</option>
+        </select>
+        <br><br>
 
-    <label for="subject">Subject:</label>
-    <select id="subject" name="subject">
-      <option value="Maths">Maths</option>
-      <option value="Eng">Eng</option>
-      <option value="Kisw">Kisw</option>
-      <option value="Chem">Chem</option>
-      <option value="Phy">Phy</option>
-      <option value="Bio">Bio</option>
-      <option value="Hist">Hist</option>
-      <option value="Geo">Geo</option>
-      <option value="C.R.E">C.R.E</option>
-      <option value="I.R.E">I.R.E</option>
-      <option value="Agr">Agr</option>
-      <option value="B.std">B.std</option>
-    </select><br><br>
+        <label for="class">Class:</label>
+        <select id="class" required>
+            <option value="Form 1">Form 1</option>
+            <option value="Form 2">Form 2</option>
+        </select>
+        <br><br>
 
-    <label for="student1">Student 1 Admission Number:</label>
-    <input type="text" id="student1" name="student1">
-    <label for="mark1">Mark:</label>
-    <input type="text" id="mark1" name="mark1"><br><br>
+        <table id="studentTable">
+            <tr>
+                <th>Admission Number</th>
+                <th>Mark</th>
+            </tr>
+            <tr class="student">
+                <td><input type="text" class="admission-number" placeholder="Admission Number" required></td>
+                <td><input type="number" class="mark" placeholder="Mark" required></td>
+            </tr>
+        </table>
 
-    <button type="button" onclick="submitMarks()">Submit Marks</button>
-  </form>
+        <button type="button" onclick="addStudentRow()">Add Another Student</button>
+        <br><br>
+        <input type="submit" value="Submit Marks">
+    </form>
 
-  <script>
-    function submitMarks() {
-      var selectedClass = document.getElementById("class").value;
-      var subject = document.getElementById("subject").value;
-      var student1 = document.getElementById("student1").value;
-      var mark1 = document.getElementById("mark1").value;
+    <script>
+        // Function to add another row for student marks input
+        function addStudentRow() {
+            const table = document.getElementById("studentTable");
+            const row = document.createElement("tr");
+            row.classList.add("student");
 
-      if (!selectedClass || !subject || !student1 || !mark1) {
-        alert("Please fill in all fields.");
-        return;
-      }
+            row.innerHTML = `
+                <td><input type="text" class="admission-number" placeholder="Admission Number" required></td>
+                <td><input type="number" class="mark" placeholder="Mark" required></td>
+            `;
+            table.appendChild(row);
+        }
 
-      var data = {
-        selectedClass: selectedClass,
-        subject: subject,
-        students: [
-          { admissionNumber: student1, mark: mark1 }
-        ]
-      };
+        // Function to handle the submission of the form
+        function submitForm() {
+            const subject = document.getElementById("subject").value;
+            const classSelected = document.getElementById("class").value;
+            const students = document.querySelectorAll(".student");
 
-      google.script.run.processFormDataForClass(data);
-      alert("Data submitted successfully.");
-    }
-  </script>
+            const marksData = [];
+
+            students.forEach(row => {
+                const admissionNumber = row.querySelector(".admission-number").value;
+                const mark = row.querySelector(".mark").value;
+
+                // Collecting the student data into an object
+                marksData.push({
+                    admissionNumber: admissionNumber,
+                    mark: parseInt(mark)
+                });
+            });
+
+            const data = {
+                subject: subject,
+                class: classSelected,
+                marks: marksData
+            };
+
+            // Calling the Google Apps Script function to process the marks
+            google.script.run
+                .withSuccessHandler(onSuccess)
+                .withFailureHandler(onFailure)
+                .submitMarks(data);
+        }
+
+        // Success callback function
+        function onSuccess(response) {
+            alert("Marks submitted successfully!");
+        }
+
+        // Failure callback function
+        function onFailure(error) {
+            alert("Error submitting marks: " + error.message);
+        }
+    </script>
 </body>
 </html>
