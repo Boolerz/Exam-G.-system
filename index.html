@@ -56,7 +56,6 @@
     </form>
 
     <script>
-        // Function to add another row for student marks input
         function addStudentRow() {
             const table = document.getElementById("studentTable");
             const row = document.createElement("tr");
@@ -69,7 +68,6 @@
             table.appendChild(row);
         }
 
-        // Function to handle the submission of the form
         function submitForm() {
             const subject = document.getElementById("subject").value;
             const classSelected = document.getElementById("class").value;
@@ -94,21 +92,26 @@
                 marks: marksData
             };
 
-            // Calling the Google Apps Script function to process the marks
+            // Check if any students have existing marks before overwriting
             google.script.run
-                .withSuccessHandler(onSuccess)
-                .withFailureHandler(onFailure)
+                .withSuccessHandler(function(existingMarks) {
+                    if (existingMarks.length > 0) {
+                        let confirmationMessage = 'The following students already have marks:\n\n';
+                        existingMarks.forEach(student => {
+                            confirmationMessage += `Admission Number: ${student.admissionNumber}, Existing Mark: ${student.existingMark}, New Mark: ${student.newMark}\n`;
+                        });
+                        confirmationMessage += '\nDo you want to overwrite these marks?';
+
+                        if (confirm(confirmationMessage)) {
+                            // If confirmed, overwrite the marks
+                            google.script.run.overwriteMarks(data);
+                        }
+                    } else {
+                        // No existing marks, directly submit
+                        google.script.run.overwriteMarks(data);
+                    }
+                })
                 .submitMarks(data);
-        }
-
-        // Success callback function
-        function onSuccess(response) {
-            alert("Marks submitted successfully!");
-        }
-
-        // Failure callback function
-        function onFailure(error) {
-            alert("Error submitting marks: " + error.message);
         }
     </script>
 </body>
